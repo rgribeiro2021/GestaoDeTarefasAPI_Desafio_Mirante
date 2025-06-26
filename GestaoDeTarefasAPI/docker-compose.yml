@@ -1,39 +1,39 @@
 ﻿version: '3.4'
 
 services:
-  # Serviço do SQL Server
+
   sqlserver:
     image: mcr.microsoft.com/mssql/server
     environment:
       - SA_PASSWORD=teste@123
       - ACCEPT_EULA=Y
     ports:
-      - "1433:1433" # Mapeia a porta 1433 do contêiner para a porta 1433 da sua máquina hospedeira
+      - "1433:1433" 
     networks:
-      - mynetwork # Conecta à rede interna do Docker Compose
-    healthcheck: # Healthcheck para verificar se o SQL Server está pronto
-      # ALTERADO: Usando uma verificação de porta TCP mais robusta
+      - mynetwork 
+    healthcheck: 
+      
       test: ["CMD-SHELL", "/bin/bash -c 'echo > /dev/tcp/localhost/1433 || exit 1'"]
       interval: 10s
       timeout: 5s
       retries: 100
       start_period: 60s
-    volumes: # Persiste os dados do SQL Server para inicializações mais rápidas
+    volumes: 
       - sqlserver_data:/var/opt/mssql
 
-  # Serviço da sua API ASP.NET Core
-  gestaodetarefasapi: # Nome do seu serviço (pode ser o nome da pasta do projeto ou outro nome amigável)
+  
+  gestaodetarefasapi: 
     build:
-      context: . # Contexto de build é a pasta do seu projeto
-      dockerfile: Dockerfile        # Dockerfile está DENTRO desse contexto
+      context: . 
+      dockerfile: Dockerfile        
     ports:
-      - "8080:8080" # Mapeia a porta HTTP 8080 do contêiner para a porta 8080 da sua máquina hospedeira
-      - "8081:8081" # Mantemos o mapeamento para 8081, embora a API só escute 8080
+      - "8080:8080" 
+      - "8081:8081" 
     environment:
-      - ASPNETCORE_URLS=http://+:8080 # API escuta apenas em HTTP na porta 8080
+      - ASPNETCORE_URLS=http://+:8080 
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=GestaoDeTarefasDB;User Id=sa;Password=teste@123;TrustServerCertificate=True;
-    depends_on: # Garante que o SQL Server esteja SAUDÁVEL antes da API iniciar
+    depends_on: 
       sqlserver:
         condition: service_healthy
     networks:
@@ -42,5 +42,5 @@ services:
 networks:
   mynetwork:
 
-volumes: # Definição do volume para persistência de dados
+volumes: 
   sqlserver_data:
